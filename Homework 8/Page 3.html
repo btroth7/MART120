@@ -1,0 +1,108 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="Images/Logo.ico" type="Logo.ico">
+    <link rel="stylesheet" href="Style.css">
+    <title>Black Stone</title>
+
+     <!-- Include Bootstrap CSS and JavaScript -->
+     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-size: 18;
+        }
+        span {
+        background-color: yellow;
+        }
+        label, input, checkbox {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .btn-orange {
+            background-color: orange;
+            border: none;
+        }
+        label, input, .radio-label {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+    <script>
+        window.addEventListener('load', function () {
+            // Make the "Name" input, "Email" input, and "Yes" radio button required
+            var nameInput = document.getElementById('name');
+            var emailInput = document.getElementById('email');
+            var acceptYes = document.getElementById('accept-yes');
+            
+            nameInput.required = true;
+            emailInput.required = true;
+            acceptYes.required = true;
+            
+            // Set focus on the "Name" input and change its border color to red
+            nameInput.focus();
+            emailInput.focus();
+            nameInput.style.backgroundColor = 'red';
+            emailInput.style.backgroundColor = 'red';
+
+            // Add an event listener to the form's submit action
+            var form = document.querySelector('form');
+            form.addEventListener('submit', function (event) {
+                var acceptNo = document.getElementById('accept-no');
+                if (acceptNo.checked) {
+                    alert('Please agree to the terms and conditions.');
+                    event.preventDefault(); // Prevent the form from being submitted
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Contact Us</h1>
+    
+    <br>
+    <br>
+    <br>
+
+    <form action="#" method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name">
+
+        <label for="email">Email Address:</label>
+        <input type="email" id="email" name="email">
+
+        <div class="radio-label">
+            <br>
+            <span id="specificStyle">Do you accept the terms of agreement?</span>
+            <br>
+            <br>
+            <br>
+            <label for="accept-yes">Yes</label>
+            <input type="radio" id="accept-yes" name="accept" value="yes">
+            <label for="accept-no">No</label>
+            <input type="radio" id="accept-no" name="accept" value="no">
+        </div>
+        
+        <br>
+        
+        <button type="submit" class="btn btn-orange">Submit</button>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <p><a href="Home Page.html">Back to Home Page</a></p>
+    <p><a href="Page 2.html">Short Story</a></p>
+</body>
+</html>

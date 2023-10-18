@@ -1,0 +1,41 @@
+body {
+  font-family: Calibri, sans-serif;
+}
+
+.navbar {
+  background: black;
+  color: white;
+  font-size: 1.25rem;
+}
+
+.navbar-brand {
+  margin: 0;
+  font-weight: bold;
+}
+
+.navbar-brand, .nav-link, .nav-link:hover {
+  color: inherit;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.icon-bar {
+  width: 1.875rem;
+  height: 0.1875rem;
+  background: white;
+  margin: 0.375rem;
+}
+
+#font-dropdown {
+  padding: 0.1875rem;
+  margin: 0.25rem 0.5rem;
+  float: right;
+}
+
+#specificStyle {
+    font-family: Calibri;
+    color: rgb(255, 234, 0);
+    background: red;
+}
