@@ -44,16 +44,29 @@
             var nameInput = document.getElementById('name');
             var emailInput = document.getElementById('email');
             var acceptYes = document.getElementById('accept-yes');
+            var acceptNo = document.getElementById('accept-no');
             
             nameInput.required = true;
             emailInput.required = true;
             acceptYes.required = true;
             
-            // Set focus on the "Name" input and change its border color to red
+            // Set focus on the "Name" and "Email" input
             nameInput.focus();
             emailInput.focus();
+
+            // Set its background color
             nameInput.style.backgroundColor = 'red';
             emailInput.style.backgroundColor = 'red';
+
+            // Remove red background when user interacts with "Name" input
+            nameInput.addEventListener('input', function () {
+                nameInput.style.backgroundColor = ''; // Resets the background color
+            });
+
+            // Remove red background when user interacts with "Email" input
+            emailInput.addEventListener('input', function () {
+                emailInput.style.backgroundColor = ''; // Resets the background color
+            });
 
             // Add an event listener to the form's submit action
             var form = document.querySelector('form');
