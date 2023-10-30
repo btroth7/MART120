@@ -1,0 +1,110 @@
+<html>
+  <head>
+    <link rel="icon" href="Images/Logo.ico" type="Logo.ico">
+    <title>
+      Self Portrait
+    </title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js"></script>
+    <script>
+      let rotation = 0; // Rotation angle for the points
+      let lineX = 0;
+      let speed = 10;
+      let lineStopped = false; // Flag to track if the line is stopped
+      let lineOffset = 0; // Offset to keep track of mouse dragging
+      let textSizeIncrement = 1; // Increment for text size
+      let textSizeDirection = 1; // Direction for text size change
+      let currentTextSize = 20; // Initial text size
+
+      function setup() {
+        createCanvas(400, 400);
+      }
+
+      function draw() {
+        background(230);
+
+        // Define colors
+        let redColor = color(255, 0, 0);
+        let orangeColor = color(255, 165, 0);
+        let yellowColor = color(255, 255, 0);
+
+        // Calculate vertical position offsets for each shape
+        let redSquareYOffset = sin(frameCount * 0.01) * 20; // Red square
+        let orangeCircleYOffset = sin(frameCount * 0.02 + PI) * 20; // Orange circle (staggered with PI phase shift)
+        let yellowTriangleYOffset = sin(frameCount * 0.03 + PI * 2) * 20; // Yellow triangle (staggered with 2*PI phase shift)
+
+        // Draw a red square
+        noStroke();
+        fill(redColor);
+        square(100, 200 - redSquareYOffset, 100);
+
+        // Draw an orange circle
+        noStroke();
+        fill(orangeColor);
+        ellipse(width / 2, height / 2 - orangeCircleYOffset, 100, 100);
+
+        // Draw a yellow triangle
+        noStroke();
+        fill(yellowColor);
+        triangle(200, 200 - yellowTriangleYOffset, 255, 100 - yellowTriangleYOffset, 310, 200 - yellowTriangleYOffset);
+
+        // Define the circle's properties
+        let centerX = 100; // X-coordinate of the circle's center
+        let centerY = 100; // Y-coordinate of the circle's center
+        let radius = 40; // Radius of the circle
+        let numPoints = 7; // Number of points
+
+        // Calculate and draw the points in a circle
+        for (let i = 0; i < numPoints; i++) {
+          let angle = rotation + TWO_PI / numPoints * i;
+          let x = centerX + cos(angle) * radius;
+          let y = centerY + sin(angle) * radius;
+
+          // Draw the points
+          fill(0); // Black color
+          ellipse(x, y, 15, 15);
+        }
+
+        // Add a "黒石" text with changing size
+        fill(0); // Black color for the text
+        textAlign(CENTER, CENTER);
+        textStyle(BOLD);
+        textSize(currentTextSize);
+        text("黒石", centerX, centerY);
+
+        // Control text size change
+        currentTextSize += textSizeIncrement * textSizeDirection;
+
+        // Reverse the text size direction if it reaches the maximum or minimum size
+        if (currentTextSize >= 30 || currentTextSize <= 10) {
+          textSizeDirection *= -1;
+        } 
+
+        // Rotate the points
+        rotation += 0.02; // Adjust the rotation speed
+
+        // Draw a line
+        strokeCap(SQUARE);
+        strokeWeight(20);
+        stroke(0);
+
+        line(lineX, 200, lineX + 100, 200);
+
+        if (!lineStopped) {
+          lineX = lineX + speed;
+          if (lineX > width) {
+            speed = -(speed);
+          } else if (lineX + 100 < 0) {
+            speed = 40;
+          }
+        }
+      }
+
+      function mousePressed() {
+        // Toggle the line movement
+        lineStopped = !lineStopped;
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
