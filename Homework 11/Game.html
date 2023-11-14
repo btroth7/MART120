@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <title>Exit Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let player;
+        let obstacles = [];
+        let triangles = [];
+        let exit;
+        let winMessage = "";
+        let winMessageTimer = 0;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            player = new Player();
+            exit = createExit();
+
+            // Add two large triangles
+            triangles.push(new Triangle(width / 4, height / 2, 60, color(random(255), random(255), random(255))));
+            triangles.push(new Triangle(3 * width / 4, height / 2, 60, color(random(255), random(255), random(255))));
+        }
+
+        function draw() {
+            background(220);
+            player.update();
+            player.show();
+
+            for (let obstacle of obstacles) {
+                obstacle.show();
+            }
+
+            for (let triangle of triangles) {
+                triangle.update();
+                triangle.show();
+            }
+
+            exit.show();
+
+            checkCollision();
+
+            if (winMessage !== "") {
+                displayWinMessage();
+            }
+        }
+
+        function keyPressed() {
+            if (keyCode === UP_ARROW) {
+                player.setDirection(0, -1);
+            } else if (keyCode === DOWN_ARROW) {
+                player.setDirection(0, 1);
+            } else if (keyCode === LEFT_ARROW) {
+                player.setDirection(-1, 0);
+            } else if (keyCode === RIGHT_ARROW) {
+                player.setDirection(1, 0);
+            }
+        }
+
+        function keyReleased() {
+            if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+                player.setDirection(0, 0);
+            }
+        }
+
+        function mousePressed() {
+            obstacles.push(new Obstacle(mouseX, mouseY, 30, 30, color(random(255), random(255), random(255))));
+        }
+
+        function createExit() {
+            return {
+                x: random(width),
+                y: random(height),
+                size: 80, // Half of the previous size
+                show: function () {
+                    fill(0, 255, 0);
+                    noStroke();
+                    ellipse(this.x, this.y, this.size);
+                }
+            };
+        }
+
+        function checkCollision() {
+            // Check if the player went through the exit
+            if (player.x > exit.x - exit.size / 2 && player.x < exit.x + exit.size / 2 &&
+                player.y > exit.y - exit.size / 2 && player.y < exit.y + exit.size / 2) {
+                winMessage = "You Win!";
+                winMessageTimer = frameCount + 180; // 3 seconds (60 frames per second)
+                // Randomize exit location on win
+                exit.x = random(width);
+                exit.y = random(height);
+            }
+        }
+
+        function displayWinMessage() {
+            textSize(32);
+            textAlign(CENTER, CENTER);
+            fill(255, 0, 0); // Red color
+            text(winMessage, width / 2, height / 2);
+            if (frameCount > winMessageTimer) {
+                winMessage = "";
+            }
+        }
+
+        class Player {
+            constructor() {
+                this.x = width / 2;
+                this.y = height / 2;
+                this.size = 40; // 5 times bigger
+                this.speed = 10;
+                this.direction = createVector(0, 0);
+            }
+
+            setDirection(x, y) {
+                this.direction.set(x, y);
+            }
+
+            update() {
+                this.x += this.direction.x * this.speed;
+                this.y += this.direction.y * this.speed;
+
+                // Additional logic for player update
+            }
+
+            show() {
+                fill(255, 165, 0); // Orange color
+                ellipse(this.x, this.y, this.size);
+            }
+        }
+
+        class Obstacle {
+            constructor(x, y, width, height, color) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.color = color;
+            }
+
+            show() {
+                fill(this.color);
+                rect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        class Triangle {
+            constructor(x, y, size, color) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.color = color;
+                this.direction = createVector(random(-1, 1), random(-1, 1));
+            }
+
+            update() {
+                this.x += this.direction.x * 2;
+                this.y += this.direction.y * 2;
+
+                // Wrap the triangle around the canvas
+                if (this.x < -this.size) {
+                    this.x = width;
+                } else if (this.x > width) {
+                    this.x = -this.size;
+                }
+
+                if (this.y < -this.size) {
+                    this.y = height;
+                } else if (this.y > height) {
+                    this.y = -this.size;
+                }
+            }
+
+            show() {
+                fill(this.color);
+                triangle(this.x, this.y - this.size / 2, this.x - this.size / 2, this.y + this.size / 2, this.x + this.size / 2, this.y + this.size / 2);
+            }
+        }
+    </script>
+</body>
+</html>
