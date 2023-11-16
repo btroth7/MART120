@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <title>Exit Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let player;
+        let obstacles = [];
+        let triangles = [];
+        let exit;
+        let winMessage = "";
+        let winMessageTimer = 0;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            createGameObjects();
+        }
+
+        function draw() {
+            background(220);
+
+            // Function calls
+            movePlayer();
+            drawPlayer();
+
+            for (let obstacle of obstacles) {
+                obstacle.show();
+            }
+
+            for (let triangle of triangles) {
+                triangle.update();
+                triangle.show();
+                triangle.wrapAround();
+            }
+
+            exit.show();
+
+            checkCollision();
+
+            if (winMessage !== "") {
+                displayWinMessage();
+            }
+        }
+
+        function keyPressed() {
+            handleKeyPress();
+        }
+
+        function keyReleased() {
+            handleKeyRelease();
+        }
+
+        function mousePressed() {
+            createObstacle(mouseX, mouseY);
+        }
+
+        function createGameObjects() {
+            createPlayer();
+            createExit();
+            
+            // Add two large triangles with random sizes
+            triangles.push(new Triangle(width / 4, height / 2, random(30, 80), color(random(255), random(255), random(255))));
+            triangles.push(new Triangle(3 * width / 4, height / 2, random(60, 320), color(random(255), random(255), random(255))));
+        }
+
+        function createPlayer() {
+            player = {
+                x: width / 2,
+                y: height / 2,
+                size: 40,
+                speed: 10,
+                direction: createVector(0, 0),
+                setDirection: function(x, y) {
+                    this.direction.set(x, y);
+                },
+                update: function() {
+                    this.x += this.direction.x * this.speed;
+                    this.y += this.direction.y * this.speed;
+                    this.applyBorders();
+                    // Additional logic for player update
+                },
+                show: function() {
+                    fill(255, 165, 0); // Orange color
+                    ellipse(this.x, this.y, this.size);
+                },
+                applyBorders: function() {
+                    this.x = constrain(this.x, this.size / 2, width - this.size / 2);
+                    this.y = constrain(this.y, this.size / 2, height - this.size / 2);
+                }
+            };
+        }
+
+        function movePlayer() {
+            player.update();
+        }
+
+        function drawPlayer() {
+            player.show();
+        }
+
+        function handleKeyPress() {
+            if (keyCode === UP_ARROW) {
+                player.setDirection(0, -1);
+            } else if (keyCode === DOWN_ARROW) {
+                player.setDirection(0, 1);
+            } else if (keyCode === LEFT_ARROW) {
+                player.setDirection(-1, 0);
+            } else if (keyCode === RIGHT_ARROW) {
+                player.setDirection(1, 0);
+            }
+        }
+
+        function handleKeyRelease() {
+            if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+                player.setDirection(0, 0);
+            }
+        }
+
+        function createObstacle(x, y) {
+            const squareSize = random(20, 50); // Adjust the range for different sizes
+            obstacles.push({
+                x: x - squareSize / 2, // Adjust position to center the square
+                y: y - squareSize / 2, // Adjust position to center the square
+                size: squareSize,
+                color: color(random(255), random(255), random(255)),
+                show: function() {
+                    fill(this.color);
+                    rect(this.x, this.y, this.size, this.size);
+                }
+            });
+        }
+
+
+        function createExit() {
+            exit = {
+                x: random(width),
+                y: random(height),
+                size: 80, // Twice as large as player
+                show: function() {
+                    this.x = constrain(this.x, this.size / 2, width - this.size / 2);
+                    this.y = constrain(this.y, this.size / 2, height - this.size / 2);
+                    fill(0, 255, 0);
+                    noStroke();
+                    ellipse(this.x, this.y, this.size);
+                }
+            };
+        }
+
+
+        function checkCollision() {
+            if (player.x > exit.x - exit.size / 2 && player.x < exit.x + exit.size / 2 &&
+                player.y > exit.y - exit.size / 2 && player.y < exit.y + exit.size / 2) {
+                winMessage = "You Win!";
+                winMessageTimer = frameCount + 180;
+                exit.x = random(width);
+                exit.y = random(height);
+            }
+        }
+
+        function displayWinMessage() {
+            textSize(32);
+            textAlign(CENTER, CENTER);
+            fill(255, 0, 0); // Red color
+            text(winMessage, width / 2, height / 2);
+            if (frameCount > winMessageTimer) {
+                winMessage = "";
+            }
+        }
+
+        class Triangle {
+            constructor(x, y, size, color) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.color = color;
+                this.direction = createVector(random(-1, 1), random(-1, 1));
+            }
+
+            update() {
+                this.x += this.direction.x * 2;
+                this.y += this.direction.y * 2;
+            }
+
+            wrapAround() {
+                if (this.x < -this.size) {
+                    this.x = width;
+                } else if (this.x > width) {
+                    this.x = -this.size;
+                }
+
+                if (this.y < -this.size) {
+                    this.y = height;
+                } else if (this.y > height) {
+                    this.y = -this.size;
+                }
+            }
+
+            show() {
+                fill(this.color);
+                triangle(this.x, this.y - this.size / 2, this.x - this.size / 2, this.y + this.size / 2, this.x + this.size / 2, this.y + this.size / 2);
+            }
+        }
+    </script>
+</body>
+</html>
