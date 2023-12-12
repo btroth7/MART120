@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="Images/Logo.ico" type="Logo.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <title>Exit Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="win-message" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; display: none;">
+        <h2 id="message-text" style="margin: 0;"></h2>
+    </div>
+
+    <script>
+        let player;
+        let triangles = [];
+        let squares = [];
+        let circles = [];
+        let bullets = [];
+        let exit;
+        let winMessage = "";
+        let winMessageTimer = 0;
+        let circleCount = 0;
+        let exitsReached = 0;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            createGameObjects();
+            setInterval(createRandomSquare, 3000);
+            setInterval(createRandomCircle, 5000);
+        }
+
+        function draw() {
+            background(220);
+            movePlayer();
+            drawPlayer();
+            moveBullets();
+
+            for (let bullet of bullets) {
+                bullet.update();
+                bullet.show();
+            }
+
+            if (exitsReached < 10) {
+                for (let triangle of triangles) {
+                    triangle.update();
+                    triangle.show();
+                    triangle.wrapAround();
+                }
+
+                for (let square of squares) {
+                    square.update();
+                    square.show();
+                    square.wrapAround();
+                }
+
+                for (let circle of circles) {
+                    circle.update();
+                    circle.show();
+                    circle.wrapAround();
+                }
+
+                exit.show();
+
+                checkCollision();
+            } else {
+                displayWinMessage();
+            }
+        }
+
+        function keyPressed() {
+            handleKeyPress();
+        }
+
+        function keyReleased() {
+            handleKeyRelease();
+        }
+
+        function mousePressed() {
+            shootBullet();
+        }
+
+        function createGameObjects() {
+            createPlayer();
+            createExit();
+
+            triangles.push(new Triangle(width / 4, height / 2, random(50, 150), color(random(255), random(255), random(255))));
+            triangles.push(new Triangle(3 * width / 4, height / 2, random(100, 300), color(random(255), random(255), random(255))));
+            triangles.push(new Triangle(width / 2, height / 4, random(75, 200), color(random(255), random(255), random(255))));
+        }
+
+        function createPlayer() {
+            player = {
+                x: width / 2,
+                y: height / 2,
+                size: 40,
+                speed: 15,
+                direction: createVector(0, 0),
+                setDirection: function(x, y) {
+                    this.direction.set(x, y);
+                },
+                update: function() {
+                    this.x += this.direction.x * this.speed;
+                    this.y += this.direction.y * this.speed;
+                    this.applyBorders();
+                },
+                show: function() {
+                    fill(255, 165, 0);
+                    ellipse(this.x, this.y, this.size);
+                },
+                applyBorders: function() {
+                    this.x = constrain(this.x, this.size / 2, width - this.size / 2);
+                    this.y = constrain(this.y, this.size / 2, height - this.size / 2);
+                }
+            };
+        }
+
+        function movePlayer() {
+            player.update();
+        }
+
+        function drawPlayer() {
+            player.show();
+        }
+
+        function handleKeyPress() {
+            if (keyCode === UP_ARROW) {
+                player.setDirection(0, -1);
+            } else if (keyCode === DOWN_ARROW) {
+                player.setDirection(0, 1);
+            } else if (keyCode === LEFT_ARROW) {
+                player.setDirection(-1, 0);
+            } else if (keyCode === RIGHT_ARROW) {
+                player.setDirection(1, 0);
+            }
+        }
+
+        function handleKeyRelease() {
+            if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+                player.setDirection(0, 0);
+            }
+        }
+
+        function shootBullet() {
+            const bulletSpeed = 10;
+            const bulletDirection = createVector(mouseX - player.x, mouseY - player.y).normalize();
+            bullets.push(new Bullet(player.x, player.y, bulletDirection, bulletSpeed));
+        }
+
+        function moveBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].update();
+                if (bullets[i].isOffscreen()) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+
+        function createExit() {
+            exit = {
+                x: 0,
+                y: 0,
+                size: 80,
+                show: function() {
+                    this.x = constrain(this.x, this.size / 2, width - this.size / 2);
+                    this.y = constrain(this.y, this.size / 2, height - this.size / 2);
+                    fill(255, 223, 0);
+                    noStroke();
+                    ellipse(this.x, this.y, this.size);
+                }
+            };
+            placeExit();
+        }
+
+        function placeExit() {
+            let exitPlaced = false;
+            while (!exitPlaced) {
+                exit.x = random(width);
+                exit.y = random(height);
+                let overlapping = false;
+                if (!overlapping) {
+                    exitPlaced = true;
+                }
+            }
+        }
+
+        function createRandomSquare() {
+            if (squares.length < 5) {
+                const squareSize = random(30, 100);
+                squares.push(new Square(random(width), random(height), squareSize, color(random(255), random(255), random(255))));
+            }
+        }
+
+        function createRandomCircle() {
+            if (circleCount < 10) {
+                const circleSize = player.size * 5;
+                circles.push(new Circle(random(width), random(height), circleSize, color(0)));
+                circleCount++;
+            }
+        }
+
+        function checkCollision() {
+            for (let triangle of triangles) {
+                if (player.x + player.size / 2 > triangle.x - triangle.size / 2 && player.x - player.size / 2 < triangle.x + triangle.size / 2 &&
+                    player.y + player.size / 2 > triangle.y - triangle.size / 2 && player.y - player.size / 2 < triangle.y + triangle.size / 2) {
+                    loseGame();
+                    break;
+                }
+            }
+
+            for (let square of squares) {
+                if (player.x + player.size / 2 > square.x && player.x - player.size / 2 < square.x + square.size &&
+                    player.y + player.size / 2 > square.y && player.y - player.size / 2 < square.y + square.size) {
+                    loseGame();
+                    break;
+                }
+            }
+
+            for (let circle of circles) {
+                if (dist(player.x, player.y, circle.x, circle.y) < (player.size + circle.size) / 2) {
+                    loseGame();
+                    break;
+                }
+            }
+
+            for (let bullet of bullets) {
+                for (let triangle of triangles) {
+                    if (bullet.collidesWith(triangle)) {
+                        bullets.splice(bullets.indexOf(bullet), 1);
+                        triangles.splice(triangles.indexOf(triangle), 1);
+                        break;
+                    }
+                }
+
+                for (let square of squares) {
+                    if (bullet.collidesWith(square)) {
+                        bullets.splice(bullets.indexOf(bullet), 1);
+                        square.hitCount++;
+
+                        if (square.hitCount >= 3) {
+                            squares.splice(squares.indexOf(square), 1);
+                        }
+                        break;
+                    }
+                }
+
+                for (let circle of circles) {
+                    if (bullet.collidesWith(circle)) {
+                        bullets.splice(bullets.indexOf(bullet), 1);
+
+                        circle.hitCount++;
+                        if (circle.hitCount >= 5) {
+                            circles.splice(circles.indexOf(circle), 1);
+                            circleCount--;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (player.x > exit.x - exit.size / 2 && player.x < exit.x + exit.size / 2 &&
+                player.y > exit.y - exit.size / 2 && player.y < exit.y + exit.size / 2) {
+                exitsReached++;
+                if (exitsReached === 10) {
+                    winGame();
+                } else {
+                    placeExit();
+                }
+            }
+        }
+
+        function winGame() {
+            winMessage = "You Win :)";
+            winMessageTimer = frameCount + 180;
+            resetPlayer();
+        }
+
+        function loseGame() {
+            winMessage = "You Lose :(";
+            winMessageTimer = frameCount + 180;
+            resetPlayer();
+        }
+
+        function resetPlayer() {
+            player.x = width / 2;
+            player.y = height / 2;
+
+            document.getElementById('win-message').style.display = 'none';
+        }
+
+        function displayWinMessage() {
+            const winMessageDiv = document.getElementById('win-message');
+            const messageText = document.getElementById('message-text');
+            textSize(32);
+            textAlign(CENTER, CENTER);
+            fill(0);
+            messageText.innerText = winMessage;
+
+            winMessageDiv.style.display = 'block';
+
+            if (frameCount > winMessageTimer) {
+                winMessageDiv.style.display = 'none';
+                winMessage = "";
+            }
+        }
+
+        class Triangle {
+            constructor(x, y, size, color) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.color = color;
+                this.direction = createVector(random(-1, 1), random(-1, 1));
+            }
+
+            update() {
+                this.x += this.direction.x * 2;
+                this.y += this.direction.y * 2;
+            }
+
+            wrapAround() {
+                if (this.x < -this.size) {
+                    this.x = width;
+                } else if (this.x > width) {
+                    this.x = -this.size;
+                }
+
+                if (this.y < -this.size) {
+                    this.y = height;
+                } else if (this.y > height) {
+                    this.y = -this.size;
+                }
+            }
+
+            show() {
+                fill(this.color);
+                triangle(this.x, this.y - this.size / 2, this.x - this.size / 2, this.y + this.size / 2, this.x + this.size / 2, this.y + this.size / 2);
+            }
+        }
+
+        class Square {
+            constructor(x, y, size, color) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.color = color;
+                this.direction = createVector(random(-1, 1), random(-1, 1));
+                this.hitCount = 0;
+            }
+
+            update() {
+                this.x += this.direction.x * 2;
+                this.y += this.direction.y * 2;
+            }
+
+            wrapAround() {
+                if (this.x < -this.size) {
+                    this.x = width;
+                } else if (this.x > width) {
+                    this.x = -this.size;
+                }
+
+                if (this.y < -this.size) {
+                    this.y = height;
+                } else if (this.y > height) {
+                    this.y = -this.size;
+                }
+            }
+
+            show() {
+                fill(this.color);
+                noStroke();
+                rect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        class Circle {
+            constructor(x, y, size, color) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.color = color;
+                this.direction = createVector(random(-1, 1), random(-1, 1));
+                this.hitCount = 0;
+            }
+
+            update() {
+                this.x += this.direction.x * 2;
+                this.y += this.direction.y * 2;
+            }
+
+            wrapAround() {
+                if (this.x < -this.size) {
+                    this.x = width;
+                } else if (this.x > width) {
+                    this.x = -this.size;
+                }
+
+                if (this.y < -this.size) {
+                    this.y = height;
+                } else if (this.y > height) {
+                    this.y = -this.size;
+                }
+            }
+
+            show() {
+                fill(this.color);
+                ellipse(this.x, this.y, this.size);
+            }
+        }
+
+        class Bullet {
+            constructor(x, y, direction, speed) {
+                this.x = x;
+                this.y = y;
+                this.direction = direction;
+                this.speed = speed;
+                this.size = 10;
+            }
+
+            update() {
+                this.x += this.direction.x * this.speed;
+                this.y += this.direction.y * this.speed;
+            }
+
+            show() {
+                fill(255, 0, 0);
+                ellipse(this.x, this.y, this.size);
+            }
+
+            isOffscreen() {
+                return this.x < 0 || this.x > width || this.y < 0 || this.y > height;
+            }
+
+            collidesWith(object) {
+                return dist(this.x, this.y, object.x, object.y) < (this.size + object.size) / 2;
+            }
+        }
+    </script>
+</body>
+</html>
